@@ -33,3 +33,4 @@ Thumbs.db
 sdk/
 src/sdk/
 virto-sdk/
+dist/
