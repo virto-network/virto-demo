@@ -96,7 +96,7 @@ export class VosMockService {
 
     console.log('Calling pass.register with params...');
     const [_, ext] = await pass.register(
-      blockNumber,
+      blockNumber!,
       hashedUserId,
       new Uint8Array(attestationResponse.rawId),
       base64urlToUint8Array(attestationResponse.response.authenticatorData),
@@ -193,7 +193,7 @@ export class VosMockService {
       const hashedUserId = await hashUserId(userId);
     
       const [tx, ext] = await pass.authenticate(
-        blockNumber,
+        blockNumber!,
         hashedUserId,
         new Uint8Array(assertionResponse.rawId),
         base64urlToUint8Array(assertionResponse.response.authenticatorData),

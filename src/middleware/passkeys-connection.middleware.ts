@@ -95,8 +95,8 @@ export class PasskeysConnectionMiddleware implements NestMiddleware {
       }
 
       // Attach cached connection to request for use in controllers
-      req['api'] = connection.api;
-      req['pass'] = connection.pass;
+      req['api'] = connection!.api;
+      req['pass'] = connection!.pass;
       
       next();
     } catch (error) {

@@ -15,7 +15,12 @@ export class ConfigService {
   }
 
   get(key: string): string {
-    return this.envConfig[key] || process.env[key];
+    const hello = this.envConfig[key] || process.env[key];
+
+    if (!hello) {
+      throw new Error(`Environment variable ${key} is not set.`);
+    }
+    return hello;
   }
 
   getPort(): number {

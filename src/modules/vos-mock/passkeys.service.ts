@@ -12,10 +12,10 @@ export class PasskeysService {
   private readonly seed: string;
 
   constructor() {
-    this.seed = process.env.SEED;
+    this.seed = process.env.SEED || '';
 
     if (!this.seed) {
-      console.warn('SEED not found in environment variables');
+      throw new Error('SEED not found in environment variables');
     }
   }
 

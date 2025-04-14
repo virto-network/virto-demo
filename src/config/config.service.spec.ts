@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from './config.service';
+import { expect } from 'chai';
 
 describe('ConfigService', () => {
   let service: ConfigService;

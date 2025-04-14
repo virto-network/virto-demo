@@ -30,7 +30,5 @@ Thumbs.db
 .c9/
 *.launch
 .settings/ 
-sdk/
-src/sdk/
-virto-sdk/
 dist/
+bundle/

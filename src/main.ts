@@ -1,10 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as cors from 'cors';
-import * as bodyParser from 'body-parser';
-import * as morgan from 'morgan';
-import * as cookieParser from 'cookie-parser';
-import * as express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
+import express from 'express';
 import { join } from 'path';
 import { ConfigService } from './config/config.service';
 

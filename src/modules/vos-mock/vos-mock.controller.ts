@@ -20,8 +20,8 @@ export class VosMockController {
     console.log("preRegister", user.profile.id);
 
     try {
-      const api = req.api as ApiPromise | undefined;
-      const pass = req.pass as Pass | undefined;
+      const api = req.api as ApiPromise;
+      const pass = req.pass as Pass;
       const attestationOptions = await this.vosMockService.preRegister(user, api, pass);
       return attestationOptions;
     } catch (error) {
@@ -39,8 +39,8 @@ export class VosMockController {
     }
 
     try {
-      const api = req.api as ApiPromise | undefined;
-      const pass = req.pass as Pass | undefined;
+      const api = req.api as ApiPromise;
+      const pass = req.pass as Pass;
       const result = await this.vosMockService.postRegister(userId, attestationResponse, api, pass);
       return result;
     } catch (error) {
@@ -61,8 +61,8 @@ export class VosMockController {
     }
 
     try {
-      const api = req.api as ApiPromise | undefined;
-      const pass = req.pass as Pass | undefined;
+      const api = req.api as ApiPromise;
+      const pass = req.pass as Pass;
       const assertionOptions = await this.vosMockService.preConnect(userId, api, pass);
       return assertionOptions;
     } catch (error) {
@@ -83,8 +83,8 @@ export class VosMockController {
     }
 
     try {
-      const api = req.api as ApiPromise | undefined;
-      const pass = req.pass as Pass | undefined;
+      const api = req.api as ApiPromise;
+      const pass = req.pass as Pass;
       console.log(api, pass);
       const result = await this.vosMockService.postConnect(userId, assertionResponse, api, pass);
       return result;
