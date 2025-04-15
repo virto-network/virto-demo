@@ -1,14 +1,25 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Req } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus, Req, Get } from '@nestjs/common';
 import { VosMockService } from './vos-mock.service';
 import { BaseProfile, User } from './types';
 import { Request } from 'express';
 import { ApiPromise } from '@polkadot/api';
 import { Pass } from './pass';
 
-@Controller('')
+@Controller('api')
 export class VosMockController {
   constructor(private readonly vosMockService: VosMockService) {}
-
+  @Get('health')
+  async healthCheck() {
+    try {
+      return {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        service: 'vos-mock'
+      };
+    } catch (error) {
+      throw new HttpException('Service is unhealthy', HttpStatus.SERVICE_UNAVAILABLE);
+    }
+  }
   @Post('pre-register')
   async preRegister(@Body() user: User<BaseProfile, Record<string, unknown>>, @Req() req: Request) {
     console.log("preRegister", user);

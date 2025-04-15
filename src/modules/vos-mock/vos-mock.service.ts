@@ -25,7 +25,11 @@ export class VosMockService {
    * Send extrinsic to the signing service
    */
   private async sendExtrinsicToSigningService(wsUrl: string, extrinsic: string): Promise<any> {
-    await this.PasskeysService.signTransaction(wsUrl, extrinsic)
+    return await this.PasskeysService.signTransaction(wsUrl, extrinsic)
+  }
+
+  private async transferMembershipToAddress(wsUrl: string, dest: string): Promise<any> {
+    return await this.PasskeysService.transferMembership(wsUrl, dest)
   }
 
   /**
@@ -107,8 +111,13 @@ export class VosMockService {
     try {
       console.log('Sending extrinsic to signing service...');
       console.log(api);
-      const data = await this.sendExtrinsicToSigningService(pass.wsUrl, ext);
-      console.log('Extrinsic sent successfully:', data);
+      const dataSign = await this.sendExtrinsicToSigningService(pass.wsUrl, ext);
+      console.log('Extrinsic sent successfully:', dataSign);
+
+      const dest = dataSign.address;
+      console.log('Transferring membership to address:', dest);
+      const dataTransfer = await this.transferMembershipToAddress(pass.wsUrl, dest);
+      console.log('Membership transferred successfully:', dataTransfer);
       
       console.log('Updating storage with credential ID...');
       Storage.set(userId, { ...storedData, credentialId: attestationResponse.rawId });
@@ -116,6 +125,7 @@ export class VosMockService {
       console.log('Returning extrinsic...');
       return {
         result: 'success',
+        address: dest,
         ext,
       };
     } catch (error) {
@@ -152,7 +162,6 @@ export class VosMockService {
           {
             id: credentialId,
             type: "public-key",
-            transports: ["usb", "internal"],
           },
         ],
         userVerification: "preferred",
