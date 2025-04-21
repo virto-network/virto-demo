@@ -4,6 +4,7 @@ import { BaseProfile, User } from './types';
 import { Request } from 'express';
 import { ApiPromise } from '@polkadot/api';
 import { Pass } from './pass';
+import { InMemorySessionStorage } from './storage';
 
 @Controller('api')
 export class VosMockController {
@@ -22,18 +23,16 @@ export class VosMockController {
   }
   @Post('pre-register')
   async preRegister(@Body() user: User<BaseProfile, Record<string, unknown>>, @Req() req: Request) {
-    console.log("preRegister", user);
 
     if (!user?.profile?.id) {
       throw new HttpException('User ID is required', HttpStatus.BAD_REQUEST);
     }
 
-    console.log("preRegister", user.profile.id);
-
     try {
       const api = req.api as ApiPromise;
       const pass = req.pass as Pass;
-      const attestationOptions = await this.vosMockService.preRegister(user, api, pass);
+      const storage = req.storage as InMemorySessionStorage;
+      const attestationOptions = await this.vosMockService.preRegister(user, api, pass, storage);
       return attestationOptions;
     } catch (error) {
       console.error('Pre-register error:', error);
@@ -52,7 +51,8 @@ export class VosMockController {
     try {
       const api = req.api as ApiPromise;
       const pass = req.pass as Pass;
-      const result = await this.vosMockService.postRegister(userId, attestationResponse, api, pass);
+      const storage = req.storage as InMemorySessionStorage;
+      const result = await this.vosMockService.postRegister(userId, attestationResponse, api, pass, storage);
       return result;
     } catch (error) {
       console.error('Post-register error:', error);
@@ -74,7 +74,8 @@ export class VosMockController {
     try {
       const api = req.api as ApiPromise;
       const pass = req.pass as Pass;
-      const assertionOptions = await this.vosMockService.preConnect(userId, api, pass);
+      const storage = req.storage as InMemorySessionStorage;
+      const assertionOptions = await this.vosMockService.preConnect(userId, api, pass, storage);
       return assertionOptions;
     } catch (error) {
       console.error('Pre-connect error:', error);
@@ -96,8 +97,9 @@ export class VosMockController {
     try {
       const api = req.api as ApiPromise;
       const pass = req.pass as Pass;
+      const storage = req.storage as InMemorySessionStorage;
       console.log(api, pass);
-      const result = await this.vosMockService.postConnect(userId, assertionResponse, api, pass);
+      const result = await this.vosMockService.postConnect(userId, assertionResponse, api, pass, storage);
       return result;
     } catch (error) {
       console.error('Post-connect error:', error);

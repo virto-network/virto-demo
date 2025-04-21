@@ -1,4 +1,4 @@
 [submodule "sdk"]
 	path = sdk
 	url = git@github.com:virto-network/virto-sdk.git
-	branch = feat/demo-stable
+	branch = main

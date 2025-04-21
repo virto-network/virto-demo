@@ -28,6 +28,7 @@ export type StoredData = {
   attestationOptions?: any;
   blockNumber?: Compact<BlockNumber>;
   credentialId?: string;
+  address?: string;
 } 
 
 
