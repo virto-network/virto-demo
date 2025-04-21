@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ChopsticksService } from '../modules/chopsticks/chopsticks.service';
 import { Pass } from '../modules/vos-mock/pass';
-import { InMemorySessionStorage } from '@/modules/vos-mock/storage';
+import { InMemorySessionStorage } from '../modules/vos-mock/storage';
 
 @Injectable()
 export class PasskeysConnectionMiddleware implements NestMiddleware {
