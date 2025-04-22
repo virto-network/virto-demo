@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 import { join } from 'path';
 import { ConfigService } from './config/config.service';
+import { setupSwagger } from './config/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,9 +20,13 @@ async function bootstrap() {
   app.use(morgan('dev'));
   app.use(cookieParser());
   
+  // Swagger UI
+  setupSwagger(app);
   
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
+  console.log(`API documentation UI: http://localhost:${port}/api-docs`);
+  console.log(`API JSON schema: http://localhost:${port}/api-docs/json`);
 }
 
-bootstrap(); 
+bootstrap();

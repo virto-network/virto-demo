@@ -6,6 +6,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 import { PasskeysConnectionMiddleware } from './middleware/passkeys-connection.middleware';
+import { ApiDocsModule } from './modules/api-docs/api-docs.module';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ dotenv.config();
     ChopsticksModule,
     VosMockModule,
     ConfigModule,
+    ApiDocsModule,
   ],
   controllers: [],
   providers: [],
