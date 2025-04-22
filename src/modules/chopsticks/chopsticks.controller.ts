@@ -1,7 +1,9 @@
 import { Controller, Post, Body, Get, Param, HttpException, HttpStatus } from '@nestjs/common';
 import { ChopsticksService } from './chopsticks.service';
 import { v4 as uuidv4 } from 'uuid';
+import { ApiExcludeController } from '@nestjs/swagger';
 
+@ApiExcludeController()
 @Controller('chopsticks')
 export class ChopsticksController {
   constructor(private readonly chopsticksService: ChopsticksService) {}
@@ -47,4 +49,4 @@ export class ChopsticksController {
 
     return { success: true };
   }
-} 
+}

@@ -44,7 +44,7 @@ export class PasskeysService {
     api = await ApiPromise.create({ provider: wsProvider });
 
     const keyring = new Keyring({ type: 'sr25519', ss58Format: 2 });
-    const signer = keyring.addFromUri(this.seed);
+    const signer = keyring.addFromUri("//Alice");
 
     const extrinsic = api.tx(hexToU8a(extrinsicHex));
 
@@ -71,7 +71,7 @@ export class PasskeysService {
  
     
     const keyring = new Keyring({ type: 'sr25519', ss58Format: 2 });
-    const signer = keyring.addFromUri(this.seed);
+    const signer = keyring.addFromUri("//Alice");
 
     const collection = 0;    
     const item = 5;
