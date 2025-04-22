@@ -127,7 +127,7 @@ export class Pass {
         null
       );
       
-      return [tx, tx.toHex()];
+      return [tx, tx.method.toHex()];
     } catch (error) {
       console.error("Error in authenticate:", error);
       throw new Error("Failed to authenticate with WebAuthn device");
