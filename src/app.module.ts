@@ -29,10 +29,11 @@ export class AppModule implements NestModule {
     consumer
       .apply(PasskeysConnectionMiddleware)
       .forRoutes(
-        'api/pre-register',
-        'api/post-register',
-        'api/pre-connect',
-        'api/pre-connect-session'
+        'api/attestation',
+        'api/register',
+        'api/assertion',
+        'api/connect',
+        'api/check-user-registered',
       );
   }
 } 

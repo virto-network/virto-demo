@@ -33,9 +33,9 @@ export class VosMockService {
   }
 
   /**
-   * Pre-register: Generate attestation options for registering a passkey
+   * Generate attestation options for registering a passkey
    */
-  async preRegister(user: User<BaseProfile, Record<string, unknown>>, api: ApiPromise, pass: Pass, sessionStorage: InMemorySessionStorage): Promise<any> {
+  async attestation(user: User<BaseProfile>, api: ApiPromise, pass: Pass, sessionStorage: InMemorySessionStorage): Promise<any> {
     if (!user?.profile?.id) {
       throw new Error('User ID is required');
     }
@@ -48,10 +48,10 @@ export class VosMockService {
       throw new Error('API and Pass objects must be provided');
     }
 
-    console.log("preRegister", user.profile.id);
+    console.log("attestation", user.profile.id);
     const hashedUserId = await hashUserId(user.profile.id);
     const [challenge, blockNumber] = await Pass.generateChallenge(api);
-    console.log("preRegister", challenge, blockNumber);
+    console.log("attestation", challenge, blockNumber);
     const challengeHex = '0x' + Buffer.from(challenge).toString('hex');
     const userIdArray = Array.from(hashedUserId);
 
@@ -71,40 +71,30 @@ export class VosMockService {
         timeout: 60_000,
         attestation: "none",
       },
+      blockNumber,
     };
-
-    sessionStorage.set(user.profile.id, { attestationOptions, blockNumber, credentialId: "" });
     
     return attestationOptions;
   }
 
   /**
-   * Post-register: Process attestation response and register the passkey
+   * Process attestation response and register the passkey
    */
-  async postRegister(userId: string, attestationResponse: any, api: ApiPromise, pass: Pass, sessionStorage: InMemorySessionStorage): Promise<any> {
+  async register(userId: string, attestationResponse: any, api: ApiPromise, pass: Pass, blockNumber: number, sessionStorage: InMemorySessionStorage): Promise<any> {
     console.log('Checking API and Pass...');
     if (!api || !pass) {
       console.log('API or Pass missing');
       throw new Error('API and Pass objects must be provided');
     }
 
-    console.log('Getting stored data for user:', userId);
-    const storedData = sessionStorage.get(userId);
-
-    console.log('Checking if stored data exists...');
-    if (!storedData) {
-      console.log('No stored data found');
-      throw new Error('User data not found');
-    }
-
-    console.log('Extracting block number from stored data');
-    const { blockNumber } = storedData;
     console.log('Hashing user ID...');
     const hashedUserId = await hashUserId(userId);
 
+    const compactBlockNumber = api.createType('Compact<BlockNumber>', blockNumber);
+
     console.log('Calling pass.register with params...');
     const [_, ext] = await pass.register(
-      blockNumber!,
+      compactBlockNumber,
       hashedUserId,
       new Uint8Array(attestationResponse.rawId),
       base64urlToUint8Array(attestationResponse.response.authenticatorData),
@@ -123,12 +113,11 @@ export class VosMockService {
       const dataTransfer = await this.transferMembershipToAddress(pass.wsUrl, dest);
       console.log('Membership transferred successfully:', dataTransfer);
       
-      sessionStorage.set(userId, { ...storedData, credentialId: attestationResponse.rawId, address: dest });
+      sessionStorage.set(userId, { credentialId: attestationResponse.rawId });
 
       return {
-        result: 'success',
-        address: dest,
         ext,
+        address: dest,
       };
     } catch (error) {
       console.log('Error occurred during extrinsic sending');
@@ -138,9 +127,9 @@ export class VosMockService {
   }
 
   /**
-   * Pre-connect: Generate assertion options for authenticating with a passkey
+   * Generate assertion options for authenticating with a passkey
    */
-  async preConnect(userId: string, api: ApiPromise, pass: Pass, sessionStorage: InMemorySessionStorage): Promise<any> {
+  async assertion(userId: string, api: ApiPromise, pass: Pass, sessionStorage: InMemorySessionStorage): Promise<any> {
     if (!api || !pass) {
       throw new Error('API and Pass objects must be provided');
     }
@@ -154,7 +143,7 @@ export class VosMockService {
     const [challenge, blockNumber] = await Pass.generateChallenge(api);
     
     // Update storage with new block number
-    sessionStorage.set(userId, { ...storedData, blockNumber });
+    sessionStorage.set(userId, { ...storedData });
 
     const { credentialId } = storedData;
 
@@ -170,15 +159,16 @@ export class VosMockService {
         userVerification: "preferred",
         timeout: 60_000,
       },
+      blockNumber,
     };
 
     return assertionOptions;
   }
 
   /**
-   * Post-connect: Process assertion response and authenticate the user
+   * Process assertion response and authenticate the user
    */
-  async postConnect(userId: string, assertionResponse: any, api: ApiPromise, pass: Pass, sessionStorage: InMemorySessionStorage): Promise<any> {
+  async connect(userId: string, assertionResponse: any, api: ApiPromise, pass: Pass, blockNumber: number, sessionStorage: InMemorySessionStorage): Promise<any> {
     if (!api || !pass) {
       throw new Error('API and Pass objects must be provided');
     }
@@ -188,8 +178,6 @@ export class VosMockService {
     if (!storedData) {
       throw new Error('User data not found');
     }
-
-    const { blockNumber } = storedData;
 
     try {
       if (!userId || !assertionResponse) {
@@ -203,9 +191,11 @@ export class VosMockService {
       }
     
       const hashedUserId = await hashUserId(userId);
+
+      const compactBlockNumber = api.createType('Compact<BlockNumber>', blockNumber);
     
       const [tx, ext] = await pass.authenticate(
-        blockNumber!,
+        compactBlockNumber,
         hashedUserId,
         new Uint8Array(assertionResponse.rawId),
         base64urlToUint8Array(assertionResponse.response.authenticatorData),

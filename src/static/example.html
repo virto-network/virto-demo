@@ -911,7 +911,7 @@
             });
 
             async function startSession() {
-                let rpcHost = `wss://${host}`;
+                let rpcHost = `ws://${host}`;
                 
                 const cookies = document.cookie.split(';');
                 const sessionCookie = cookies.find(cookie => cookie.trim().startsWith('sessionId='));
@@ -931,7 +931,7 @@
                 }
                 
                 const data = await resp.json();
-                data.port = 10000 + data.port;
+                // data.port = 10000 + data.port;
 
                 console.log({data})
                 
@@ -993,7 +993,7 @@
             
             function updatePolkadotLink() {
                 if (wsControl) {
-                    const rpcUrl = `wss://${host}:${wsControl}`;
+                    const rpcUrl = `ws://${host}:${wsControl}`;
                     console.log('rpcUrl', rpcUrl)
                     const encodedRpc = encodeURIComponent(rpcUrl);
                     const currentExtrinsic = document.getElementById('extrinsic-input').value.trim();
