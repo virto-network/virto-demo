@@ -6,6 +6,8 @@ import { ISubmittableResult } from '@polkadot/types/types';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { Pass } from './pass';
+import { HexString } from '@polkadot/util/types';
+import { blake2b } from 'hash-wasm';
 
 @Injectable()
 export class PasskeysService {
@@ -37,6 +39,30 @@ export class PasskeysService {
     );
   }
 
+  async extrinsicContext(wsUrl: string, callData: HexString, passAccountId: string): Promise<string> {
+    const wsProvider = new WsProvider(wsUrl);
+    const api = await ApiPromise.create({ provider: wsProvider });
+
+    const { nonce } = await api.query.system.account(passAccountId);
+
+    const version = 0; // Convertir a u8
+
+    let extensions = new Uint8Array([
+      ...api.createType("Era", "Immortal").toU8a(), // CheckEra
+      nonce, // CheckNonce
+      ...api.createType("ChargeAssetTxPayment", { tip: 0, asset_id: null }).toU8a(), // ChargeAssetTxPayment
+    ]);
+
+    let implicits = new Uint8Array([
+      ...api.runtimeVersion.specVersion.toU8a(), // SpecVersion
+      ...api.runtimeVersion.transactionVersion.toU8a(), // TxVersion
+      ...api.genesisHash,
+      // Implicit of Era
+    ]);
+
+    return blake2b(new Uint8Array([...new Uint8Array(version), ...hexToU8a(callData), ...extensions, ...implicit]), 256);
+  }
+
   async signTransaction(wsUrl: string, extrinsicHex: string): Promise<any> {
     let api: ApiPromise;
 
@@ -58,7 +84,7 @@ export class PasskeysService {
       // @ts-ignore
       (registeredEvent.data as unknown as Record<string, any>).who.toU8a()
     );
-    
+
     return {
       address: accountKey
     };
@@ -68,12 +94,12 @@ export class PasskeysService {
 
     const wsProvider = new WsProvider(wsUrl);
     const api = await ApiPromise.create({ provider: wsProvider });
- 
-    
+
+
     const keyring = new Keyring({ type: 'sr25519', ss58Format: 2 });
     const signer = keyring.addFromUri(this.seed);
 
-    const collection = 0;    
+    const collection = 0;
     const item = 5;
 
     const transferCall = api.tx.communityMemberships.transfer(
