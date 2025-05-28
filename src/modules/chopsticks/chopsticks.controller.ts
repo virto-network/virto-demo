@@ -11,7 +11,7 @@ export class ChopsticksController {
   @Post('start')
   async startChopsticks(@Body() body: { sessionId?: string, endpoint?: string }) {
     try {
-      const { sessionId = uuidv4(), endpoint = 'wss://kreivo.io' } = body;
+      const { sessionId = uuidv4(), endpoint = 'wss://kreivo.kippu.rocks' } = body;
       console.log("startChopsticks", sessionId, endpoint);
       const result = await this.chopsticksService.startChopsticks(sessionId, endpoint);
       console.log("startChopsticks result", result);
