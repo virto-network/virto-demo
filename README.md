@@ -1,5 +1,8 @@
 # Virto Demo
 
+> **⚠️ PROOF OF CONCEPT**  
+> This is a proof of concept implementation for demonstration purposes only. Not intended for production use.
+
 ## Overview
 
 This demo NestJS server integrates three core services:
