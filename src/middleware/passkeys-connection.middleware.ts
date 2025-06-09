@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ChopsticksService } from '../modules/chopsticks/chopsticks.service';
 import { Pass } from '../modules/vos-mock/pass';
+import { InMemorySessionStorage } from '../modules/vos-mock/storage';
 
 @Injectable()
 export class PasskeysConnectionMiddleware implements NestMiddleware {
@@ -97,7 +98,8 @@ export class PasskeysConnectionMiddleware implements NestMiddleware {
       // Attach cached connection to request for use in controllers
       req['api'] = connection!.api;
       req['pass'] = connection!.pass;
-      
+      req['storage'] = InMemorySessionStorage.getInstance(cacheKey);
+
       next();
     } catch (error) {
       console.error('Error in passkeys connection middleware:', error);

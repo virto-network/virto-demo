@@ -1,8 +1,4 @@
-import { Compact } from "@polkadot/types";
-
-
 export { type BlockNumber } from "@polkadot/types/interfaces";
-import type { BlockNumber } from "@polkadot/types/interfaces";
 export { type Compact } from "@polkadot/types";
 
 
@@ -13,9 +9,8 @@ export interface BaseProfile {
   email?: string;
 }
 
-export interface User<P, M> {
+export interface User<P> {
   profile: P;
-  metadata?: M;
 }
 
 export type Command = {
@@ -25,8 +20,6 @@ export type Command = {
 };
 
 export type StoredData = {
-  attestationOptions?: any;
-  blockNumber?: Compact<BlockNumber>;
   credentialId?: string;
 } 
 

@@ -85,7 +85,7 @@ export class ChopsticksService implements OnModuleDestroy {
       System: {
         Account: [
           [
-            ["5DS4XWXWzAimdj8GR5w1ZepsUZUUPN96YxL8LEaWa3GRUKfC"],
+            ["HNZata7iMYWmk5RvZRTiAsSDhV8366zq2YGb3tLH5Upf74F"],
             {
               nonce: 0,
               consumers: 0,
@@ -108,7 +108,7 @@ export class ChopsticksService implements OnModuleDestroy {
       CommunityMemberships: {
         Account: [
           [
-            ["5DS4XWXWzAimdj8GR5w1ZepsUZUUPN96YxL8LEaWa3GRUKfC", 0, 5],
+            ["HNZata7iMYWmk5RvZRTiAsSDhV8366zq2YGb3tLH5Upf74F", 0, 5],
             null
           ]
         ],
@@ -116,7 +116,7 @@ export class ChopsticksService implements OnModuleDestroy {
           [
             [0, 5],
             {
-              owner: "5DS4XWXWzAimdj8GR5w1ZepsUZUUPN96YxL8LEaWa3GRUKfC",
+              owner: "HNZata7iMYWmk5RvZRTiAsSDhV8366zq2YGb3tLH5Upf74F",
               approvals: {},
               deposit: {
                 account: "F3opxRbN5ZbjJNU511Kj2TLuzFcDq9BGduA9TgiECafpg29",

@@ -3,7 +3,7 @@ init:
 	@rm -rf sdk
 	@git submodule sync
 	@echo "Initializing update..."
-	@git submodule add --force -b feat/demo-stable git@github.com:virto-network/virto-sdk.git sdk 
+	@git submodule add --force -b main git@github.com:virto-network/virto-sdk.git sdk 
 	@git submodule update --init --recursive
 	@git submodule update --remote
 	@echo "Copying components to dist/static..."

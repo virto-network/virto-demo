@@ -14,7 +14,7 @@ dotenv.config();
   imports: [
     ServeStaticModule.forRoot({
       serveRoot: '/',
-      rootPath: join(__dirname, 'static'),
+      rootPath: join(process.cwd(), 'dist', 'static')
     }),
     ChopsticksModule,
     VosMockModule,
@@ -29,10 +29,11 @@ export class AppModule implements NestModule {
     consumer
       .apply(PasskeysConnectionMiddleware)
       .forRoutes(
-        'pre-register',
-        'post-register',
-        'pre-connect',
-        'pre-connect-session'
+        'api/attestation',
+        'api/register',
+        'api/assertion',
+        'api/connect',
+        'api/check-user-registered',
       );
   }
 } 
