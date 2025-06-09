@@ -10,19 +10,20 @@ describe('Virto Connect Demo Flow', () => {
   const testUsername = `user`;
 
   beforeAll(async () => {
+    const isCI = process.env.CI === 'true';
     browser = await puppeteer.launch({
-      headless: false,
-      executablePath: '/usr/bin/brave-browser',
+      headless: isCI ? 'new' : false,
+      executablePath: isCI ? undefined : '/usr/bin/brave-browser',
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
         '--disable-accelerated-2d-canvas',
         '--disable-gpu',
-        '--auto-open-devtools-for-tabs'
+        ...(isCI ? [] : ['--auto-open-devtools-for-tabs'])
       ],
       slowMo: 50,
-      devtools: true
+      devtools: !isCI
     });
     
     page = await browser.newPage();
@@ -40,7 +41,7 @@ describe('Virto Connect Demo Flow', () => {
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
   afterAll(async () => {
-    // await browser.close();
+    await browser.close();
   });
   
   test('Complete Virto Connect demo flow', async () => {
