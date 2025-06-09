@@ -10,6 +10,8 @@ import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/s
 
 @ApiTags('vos-mock')
 @Controller('api')
+@ApiTags('vos-mock')
+@Controller('api')
 export class VosMockController {
   constructor(private readonly vosMockService: VosMockService) {}
 
