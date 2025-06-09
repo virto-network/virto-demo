@@ -348,6 +348,7 @@ export class VirtoConnect extends HTMLElement {
 
       const signInBtn = document.createElement("virto-button");
       signInBtn.setAttribute("label", "Sign In Now");
+      signInBtn.id = "sign-in-button";
       signInBtn.addEventListener("click", () => {
         this.currentFormType = "register";
         this.renderCurrentForm();
