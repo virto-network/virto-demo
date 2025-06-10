@@ -10,7 +10,7 @@
         "outDir": "dist/"
       },
       {
-        "include": "**/*.js",
+        "include": "static/**/*",
         "outDir": "dist/" 
       }
     ],
