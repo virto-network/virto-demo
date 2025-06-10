@@ -76,6 +76,10 @@ describe('Virto Connect Demo Flow', () => {
     console.log('✅ WebAuthn virtual authenticator configured:', authenticatorId.authenticatorId);
 
     await sleep(2000);
+
+    await page.waitForSelector('#hero-demo-btn', { visible: true });
+    await page.click('#hero-demo-btn');
+    console.log('✅ Clicked on hero demo button');
     
     await page.evaluate(() => {
       document.querySelector('#demo-switch').click();
