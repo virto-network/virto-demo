@@ -3221,7 +3221,8 @@
             });
 
             async function startSession() {
-                let rpcHost = `ws://${host}`;
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                let rpcHost = `${protocol}//${host}`;
                 
                 const cookies = document.cookie.split(';');
                 const sessionCookie = cookies.find(cookie => cookie.trim().startsWith('sessionId='));
@@ -3241,6 +3242,7 @@
                 }
                 
                 const data = await resp.json();
+                const portBinding = window.location.protocol === 'https:' ? data.port + 10000 : data.port;
 
                 console.log({data})
                 
@@ -3251,7 +3253,7 @@
                     sessionId = cookieSessionId;
                 }
                 
-                console.log(`Session started. sessionId=${sessionId}. RPC Chopsticks=${data.port}`);
+                console.log(`Session started. sessionId=${sessionId}. RPC Chopsticks=${portBinding}`);
 
                 const currentUrl = new URL(window.location.href);
                 currentUrl.searchParams.set('sessionId', sessionId);
@@ -3263,8 +3265,8 @@
                 const virtoConnect = document.getElementById('virtoConnect');
                 virtoConnect.setSessionId(sessionId);
 
-                const providerUrl = `${rpcHost}:${data.port}`;
-                wsControl = data.port;
+                const providerUrl = `${rpcHost}:${portBinding}`;
+                wsControl = portBinding;
                 virtoConnect.setAttribute('provider-url', providerUrl);
 
                 const previewConnect = document.getElementById('previewVirtoConnect');
@@ -3276,7 +3278,7 @@
                 const explorerLink = document.getElementById('explorer-link');
                 const explorerUrl = document.getElementById('explorer-url');
                 if (explorerLink && explorerUrl) {
-                    explorerUrl.href = `https://polkadot.js.org/apps/?rpc=${rpcHost}:${data.port}#/explorer`;
+                    explorerUrl.href = `https://polkadot.js.org/apps/?rpc=${rpcHost}:${portBinding}#/explorer`;
                     explorerLink.style.display = 'block';
                 }
             }
