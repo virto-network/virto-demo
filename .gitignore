@@ -32,3 +32,6 @@ Thumbs.db
 .settings/ 
 dist/
 bundle/
+
+# Storage files
+storage/*.json

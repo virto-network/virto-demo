@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
-import * as path from 'path';
 
 @Injectable()
 export class ConfigService {
@@ -33,10 +32,6 @@ export class ConfigService {
 
   getKreivoProvider(): string {
     return this.get('KREIVO_PROVIDER');
-  }
-
-  getWsProviderUrl(): string {
-    return this.get('WS_PROVIDER_URL');
   }
 
   getSeed(): string {

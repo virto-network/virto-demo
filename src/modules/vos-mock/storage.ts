@@ -1,14 +1,19 @@
 import { StoredData } from './types';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
- * Simple in-memory storage for the VOS mock service
+ * JSON file-based storage for the VOS mock service
  */
 export class InMemorySessionStorage {
   private static instances: Map<string, InMemorySessionStorage> = new Map();
   private store: Map<string, StoredData>;
+  private filePath: string;
 
   private constructor(public name: string) {
     this.store = new Map<string, StoredData>();
+    this.filePath = path.join(process.cwd(), 'storage', `${name}.json`);
+    this.loadFromFile();
   }
 
   /**
@@ -32,10 +37,46 @@ export class InMemorySessionStorage {
   }
 
   /**
+   * Load data from JSON file
+   */
+  private loadFromFile(): void {
+    try {
+      // Ensure storage directory exists
+      const storageDir = path.dirname(this.filePath);
+      if (!fs.existsSync(storageDir)) {
+        fs.mkdirSync(storageDir, { recursive: true });
+      }
+
+      // Load data from file if it exists
+      if (fs.existsSync(this.filePath)) {
+        const data = fs.readFileSync(this.filePath, 'utf-8');
+        const parsed = JSON.parse(data);
+        this.store = new Map(Object.entries(parsed));
+      }
+    } catch (error) {
+      console.error(`Error loading storage from ${this.filePath}:`, error);
+      this.store = new Map<string, StoredData>();
+    }
+  }
+
+  /**
+   * Save data to JSON file
+   */
+  private saveToFile(): void {
+    try {
+      const data = Object.fromEntries(this.store);
+      fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
+    } catch (error) {
+      console.error(`Error saving storage to ${this.filePath}:`, error);
+    }
+  }
+
+  /**
    * Set data for a user
    */
   public set(userId: string, data: StoredData): void {
     this.store.set(userId, data);
+    this.saveToFile();
   }
 
   /**
@@ -49,7 +90,11 @@ export class InMemorySessionStorage {
    * Delete data for a user
    */
   public delete(userId: string): boolean {
-    return this.store.delete(userId);
+    const result = this.store.delete(userId);
+    if (result) {
+      this.saveToFile();
+    }
+    return result;
   }
 
   /**
@@ -57,5 +102,6 @@ export class InMemorySessionStorage {
    */
   public clear(): void {
     this.store.clear();
+    this.saveToFile();
   }
 } 

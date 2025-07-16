@@ -15,6 +15,7 @@
     ]
   },
   "scripts": {
+    "postinstall": "papi",
     "release": "npx @yao-pkg/pkg . --output virto-demo",
     "build": "tsc && npm run copy-static",
     "copy-static": "mkdir -p dist/static && cp -r src/static/* dist/static/",
@@ -34,6 +35,12 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
   },
   "dependencies": {
+    "@polkadot-api/descriptors": "file:.papi/descriptors",
+    "@polkadot-api/substrate-bindings": "^0.14.0",
+    "@polkadot/util": "^13.4.3",
+    "@virtonetwork/authenticators-webauthn": "^1.0.7",
+    "es-arraybuffer-base64": "^1.1.2",
+    "polkadot-api": "^1.13.0",
     "@acala-network/chopsticks": "^1.0.3",
     "@nestjs/common": "^11.0.16",
     "@nestjs/core": "^11.0.16",
