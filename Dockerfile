@@ -15,9 +15,6 @@ COPY . .
 RUN mkdir -p src/static
 RUN mkdir -p dist/static
 
-# Make example.html accessible from root path
-RUN cp src/static/example.html src/static/index.html 
-
 RUN npm run build
 RUN cp -r src/static/* dist/static/ || true
 
