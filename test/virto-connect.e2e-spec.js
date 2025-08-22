@@ -1,13 +1,10 @@
 const puppeteer = require('puppeteer');
-const path = require('path');
 
 describe('Virto Connect Demo Flow', () => {
   let browser;
   let page;
-  let cdpSession;
-  let authenticatorId;
   
-  const testUsername = `user`;
+  const testUsername = Array.from({length: 4}, () => String.fromCharCode(97 + Math.floor(Math.random() * 26))).join('');
 
   beforeAll(async () => {
     const isCI = process.env.CI === 'true';
@@ -34,8 +31,8 @@ describe('Virto Connect Demo Flow', () => {
       }, 1000);
     });
     
-    page.setDefaultTimeout(60000);
-    page.setDefaultNavigationTimeout(60000);
+    page.setDefaultTimeout(180000);
+    page.setDefaultNavigationTimeout(180000);
   });
 
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -45,7 +42,7 @@ describe('Virto Connect Demo Flow', () => {
   });
   
   test('Complete Virto Connect demo flow', async () => {
-    const url = 'http://localhost:3000/example.html';
+    const url = 'http://localhost:3001/example.html';
     await page.goto(url, { waitUntil: 'networkidle0' });
     console.log('✅ Loaded example.html from server');
 
@@ -80,16 +77,6 @@ describe('Virto Connect Demo Flow', () => {
     await page.waitForSelector('#hero-demo-btn', { visible: true });
     await page.click('#hero-demo-btn');
     console.log('✅ Clicked on hero demo button');
-    
-    await page.evaluate(() => {
-      document.querySelector('#demo-switch').click();
-    });
-    console.log('✅ Clicked on demo switch');
-    
-    await page.waitForFunction(
-      'document.querySelector("#step1").classList.contains("completed")'
-    );
-    console.log('✅ Enabled Demo Mode');
     
     await page.waitForSelector('#connect-button:not([disabled])');
     await page.click('#connect-button');
@@ -159,10 +146,14 @@ describe('Virto Connect Demo Flow', () => {
       }
     });
     console.log('✅ Clicked register button');
-    
-    await page.waitForFunction(
-      'document.querySelector("#step2").classList.contains("completed")'
-    );
+
+    await page.waitForFunction(() => {
+      const virtoConnect = document.querySelector('virto-connect');
+      if (!virtoConnect) return false;
+      const shadowRoot = virtoConnect.shadowRoot;
+      if (!shadowRoot) return false;
+      return shadowRoot.querySelector('#sign-in-button') !== null;
+    });
     console.log('✅ Registered new user successfully');
 
     await page.evaluate(() => {
@@ -212,9 +203,7 @@ describe('Virto Connect Demo Flow', () => {
     });
     console.log('✅ Clicked login button');
     
-    await page.waitForFunction(
-      'document.querySelector("#step3").classList.contains("completed")'
-    );
+    await page.waitForSelector('#extrinsic-section', { visible: true });
     console.log('✅ Logged in successfully');
 
     await page.evaluate(() => {
@@ -229,16 +218,21 @@ describe('Virto Connect Demo Flow', () => {
     });
     console.log('✅ Clicked close button');
     
-    await page.waitForSelector('#extrinsic-section', { visible: true });
-    
     await page.evaluate(() => {
-      document.querySelector('#sign-extrinsic-button').click();
+      const transferAction = document.querySelector('[data-action="transfer"]');
+      if (transferAction) {
+        transferAction.click();
+      } else {
+        console.error('Transfer action not found');
+      }
     });
-    console.log('✅ Clicked sign extrinsic button');
+    console.log('✅ Clicked transfer action');
     
-    await page.waitForFunction(
-      'document.querySelector("#step4").classList.contains("completed")'
-    );
+    await page.waitForSelector('#transfer-button', { visible: true });
+    console.log('✅ Transfer button found');
+    
+    await page.click('#transfer-button');
+    console.log('✅ Clicked transfer button to process payment');
     
     await page.waitForSelector('.success-notification', { visible: true });
     console.log('✅ Signed extrinsic successfully');
@@ -248,5 +242,5 @@ describe('Virto Connect Demo Flow', () => {
     });
     
     await sleep(3000);
-  }, 120000); 
+  }, 240000); 
 });

@@ -21,6 +21,7 @@ export type Command = {
 
 export type StoredData = {
   credentialId?: string;
+  address?: string;
 } 
 
 

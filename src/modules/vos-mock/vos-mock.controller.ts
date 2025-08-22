@@ -2,8 +2,6 @@ import { Controller, Post, Body, HttpException, HttpStatus, Req, Get, Query } fr
 import { VosMockService } from './vos-mock.service';
 import { BaseProfile, User } from './types';
 import { Request } from 'express';
-import { ApiPromise } from '@polkadot/api';
-import { Pass } from './pass';
 import { InMemorySessionStorage } from './storage';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -106,14 +104,16 @@ export class VosMockController {
   @ApiResponse({ status: 400, description: 'Bad request - Invalid or missing user data' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @Get('attestation')
-  async attestation(@Query('id') id: string, @Query('name') name: string, @Req() req: Request) {
+  async attestation(@Query('id') id: string, @Query('name') name: string, @Query('challenge') challenge: string, @Req() req: Request) {
     if (!id) {
       throw new HttpException('User ID is required', HttpStatus.BAD_REQUEST);
     }
 
+    if (!challenge) {
+      throw new HttpException('Challenge is required', HttpStatus.BAD_REQUEST);
+    }
+
     try {
-      const api = req.api as ApiPromise;
-      const pass = req.pass as Pass;
       const storage = req.storage as InMemorySessionStorage;
       
       // Create a user object from query parameters
@@ -125,7 +125,7 @@ export class VosMockController {
         }
       };
       
-      const attestationOptions = await this.vosMockService.attestation(user, api, pass, storage);
+      const attestationOptions = await this.vosMockService.attestation(user, challenge);
       return attestationOptions;
     } catch (error) {
       console.error('Attestation error:', error);
@@ -178,25 +178,19 @@ export class VosMockController {
   @ApiResponse({ status: 400, description: 'Bad request - Missing required parameters' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @Post('register')
-  async register(@Body() body: { userId: string; attestationResponse: any; blockNumber: number }, @Req() req: Request) {
-    const { userId, attestationResponse, blockNumber } = body;
+  async register(@Body() body: { userId: string; hashedUserId: string; credentialId: string; address: string; attestationResponse: any }, @Req() req: Request) {
+    const { userId, hashedUserId, credentialId, address, attestationResponse } = body;
+
+    console.log(userId, credentialId, address, attestationResponse);
     
-    if (!userId || !attestationResponse || blockNumber === undefined) {
-      throw new HttpException('User ID, attestation response, and block number are required', HttpStatus.BAD_REQUEST);
+    if (!userId || !attestationResponse) {
+      throw new HttpException('User ID and attestation response are required', HttpStatus.BAD_REQUEST);
     }
 
     try {
-      const api = req.api as ApiPromise;
-      const pass = req.pass as Pass;
       const storage = req.storage as InMemorySessionStorage;
       
-      // Update the stored block number from the request
-      const storedData = storage.get(userId);
-      if (storedData) {
-        storage.set(userId, { ...storedData });
-      }
-      
-      const result = await this.vosMockService.register(userId, attestationResponse, api, pass, blockNumber, storage);
+      const result = await this.vosMockService.register(userId, hashedUserId, credentialId, address, attestationResponse, storage);
       return result;
     } catch (error) {
       console.error('Register error:', error);
@@ -252,129 +246,23 @@ export class VosMockController {
   @ApiResponse({ status: 400, description: 'Bad request - User ID is required or User data not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @Get('assertion')
-  async assertion(@Query('userId') userId: string, @Req() req: Request) {
+  async assertion(@Query('userId') userId: string, @Query('challenge') challenge: string, @Req() req: Request) {
     if (!userId) {
       throw new HttpException('User ID is required', HttpStatus.BAD_REQUEST);
     }
 
+    if (!challenge) {
+      throw new HttpException('Challenge is required', HttpStatus.BAD_REQUEST);
+    }
+
     try {
-      const api = req.api as ApiPromise;
-      const pass = req.pass as Pass;
       const storage = req.storage as InMemorySessionStorage;
-      const assertionOptions = await this.vosMockService.assertion(userId, api, pass, storage);
+      const assertionOptions = await this.vosMockService.assertion(userId, challenge, storage);
       return assertionOptions;
     } catch (error) {
       console.error('Assertion error:', error);
       throw new HttpException(
         error instanceof Error ? error.message : 'Failed to prepare connection',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
-
-  @ApiOperation({ summary: 'Complete WebAuthn authentication process' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        userId: { type: 'string', description: 'User ID', example: 'test' },
-        assertionResponse: { 
-          type: 'object', 
-          description: 'WebAuthn assertion response',
-          properties: {
-            id: { type: 'string', description: 'Credential ID as base64url string', example: 'yLbgoD7WL6UXBHpj5SZIOQw35XNk6z4Bz3BLSquG2HI' },
-            rawId: { type: 'string', description: 'Raw credential ID as base64url string', example: 'yLbgoD7WL6UXBHpj5SZIOQw35XNk6z4Bz3BLSquG2HI' },
-            type: { type: 'string', description: 'Type of credential', example: 'public-key' },
-            response: {
-              type: 'object',
-              properties: {
-                authenticatorData: { type: 'string', description: 'Base64url encoded authenticator data', example: 'SZYN5YgOjGh0NBcPZHZgW4_krrmihjLHmVzzuoMdl2MBAAAAAg' },
-                clientDataJSON: { type: 'string', description: 'Base64url encoded client data JSON', example: 'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiMmNmVk01NlRYUjcydEVsSmx5NzFxcU56elNtNkZyNjE3Y3lUck5uT2xtYyIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4NSIsImNyb3NzT3JpZ2luIjpmYWxzZSwib3RoZXJfa2V5c19jYW5fYmVfYWRkZWRfaGVyZSI6ImRvIG5vdCBjb21wYXJlIGNsaWVudERhdGFKU09OIGFnYWluc3QgYSB0ZW1wbGF0ZS4gU2VlIGh0dHBzOi8vZ29vLmdsL3lhYlBleCJ9' },
-                signature: { type: 'string', description: 'Base64url encoded signature', example: 'MEQCIBADT7Cz8Lk9hb8NR6EoQDEutSeBBsO5Qm_7kMtyu5nVAiBZHLwvgo4K72PIGwNklpef7bCjbfk1HXijpGBL0lFG-g' }
-              }
-            }
-          }
-        },
-        blockNumber: { 
-          type: 'number', 
-          description: 'Blockchain block number from the assertion request',
-          example: 1107521
-        }
-      },
-      required: ['userId', 'assertionResponse', 'blockNumber']
-    }
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Authentication completed successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        command: {
-          type: 'object',
-          properties: {
-            url: { 
-              type: 'string', 
-              description: 'WebSocket URL for the command',
-              example: 'ws://localhost:12281/pass/authenticate'
-            },
-            body: { 
-              type: 'array', 
-              description: 'Arguments for the transaction',
-              example: [
-                "0x0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8",
-                {
-                  "webAuthn": {
-                    "meta": {
-                      "authorityId": "0x6b726569766f5f70000000000000000000000000000000000000000000000000",
-                      "userId": "0xf0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b",
-                      "context": 1107521
-                    },
-                    "authenticatorData": "0x49960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d97630100000002",
-                    "clientData": "0x7b2274797065223a22776562617574686e2e676574222c226368616c6c656e6765223a22326366564d3536545852373274456c4a6c79373171714e7a7a536d364672363137637954724e6e4f6c6d63222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a38303835222c2263726f73734f726967696e223a66616c73652c226f746865725f6b6579735f63616e5f62655f61646465645f68657265223a22646f206e6f7420636f6d7061726520636c69656e74446174614a534f4e20616761696e737420612074656d706c6174652e205365652068747470733a2f2f676f6f2e676c2f796162506578227d",
-                    "signature": "0x3044022010034fb0b3f0b93d85bf0d47a12840312eb5278106c3b9426ffb90cb72bb99d50220591cbc2f828e0aef63c81b036496979fedb0a36df9351d78a3a4604bd25146fa"
-                  }
-                },
-                null
-              ]
-            },
-            hex: { 
-              type: 'string', 
-              description: 'Extrinsic as hex string',
-              example: "0x06030e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8006b726569766f5f70000000000000000000000000000000000000000000000000f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b41e610009449960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d97630100000002cd037b2274797065223a22776562617574686e2e676574222c226368616c6c656e6765223a22326366564d3536545852373274456c4a6c79373171714e7a7a536d364672363137637954724e6e4f6c6d63222c226f726967696e223a22687474703a2f2f6c6f63616c686f73743a38303835222c2263726f73734f726967696e223a66616c73652c226f746865725f6b6579735f63616e5f62655f61646465645f68657265223a22646f206e6f7420636f6d7061726520636c69656e74446174614a534f4e20616761696e737420612074656d706c6174652e205365652068747470733a2f2f676f6f2e676c2f796162506578227d19013044022010034fb0b3f0b93d85bf0d47a12840312eb5278106c3b9426ffb90cb72bb99d50220591cbc2f828e0aef63c81b036496979fedb0a36df9351d78a3a4604bd25146fa00"
-            }
-          }
-        }
-      }
-    }
-  })
-  @ApiResponse({ status: 400, description: 'Bad request - Missing required parameters or User data not found' })
-  @ApiResponse({ status: 500, description: 'Internal server error' })
-  @Post('connect')
-  async connect(@Body() body: { userId: string; assertionResponse: any; blockNumber: number }, @Req() req: Request) {
-    const { userId, assertionResponse, blockNumber } = body;
-    
-    if (!userId || !assertionResponse || blockNumber === undefined) {
-      throw new HttpException('User ID, assertion response, and block number are required', HttpStatus.BAD_REQUEST);
-    }
-
-    try {
-      const api = req.api as ApiPromise;
-      const pass = req.pass as Pass;
-      const storage = req.storage as InMemorySessionStorage;
-      
-      // Update the stored block number from the request
-      const storedData = storage.get(userId);
-      if (storedData) {
-        storage.set(userId, { ...storedData });
-      }
-      
-      const result = await this.vosMockService.connect(userId, assertionResponse, api, pass, blockNumber, storage);
-      return result;
-    } catch (error) {
-      console.error('Connect error:', error);
-      throw new HttpException(
-        error instanceof Error ? error.message : 'Failed during authentication',
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -411,6 +299,52 @@ export class VosMockController {
       console.error('Check user registered error:', error);
       throw new HttpException(
         'Failed to check user registration status',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  @ApiOperation({ summary: 'Get user address by username' })
+  @ApiQuery({ name: 'userId', required: true, type: String, description: 'User ID to get address for', example: 'test' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'User address retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        address: { type: 'string', description: 'User address', example: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Bad request - Missing required parameters' })
+  @ApiResponse({ status: 404, description: 'User not found or not registered' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @Get('get-user-address')
+  async getUserAddress(@Query('userId') userId: string, @Req() req: Request) {
+    if (!userId) {
+      throw new HttpException('User ID is required', HttpStatus.BAD_REQUEST);
+    }
+
+    console.log("getUserAddress", userId);
+
+    try {
+      const storage = req.storage as InMemorySessionStorage;
+      const storedData = storage.get(userId);
+      
+      if (!storedData || !storedData.address) {
+        throw new HttpException('User not found or not registered', HttpStatus.NOT_FOUND);
+      }
+
+      return { address: storedData.address };
+    } catch (error) {
+      console.error('Get user address error:', error);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      throw new HttpException(
+        'Failed to get user address',
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }

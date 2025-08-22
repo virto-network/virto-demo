@@ -3,9 +3,6 @@ import { AppModule } from './app.module';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
-import cookieParser from 'cookie-parser';
-import express from 'express';
-import { join } from 'path';
 import { ConfigService } from './config/config.service';
 import { setupSwagger } from './config/swagger.config';
 
@@ -18,7 +15,6 @@ async function bootstrap() {
   app.use(cors());
   app.use(bodyParser.json());
   app.use(morgan('dev'));
-  app.use(cookieParser());
   
   // Swagger UI
   setupSwagger(app);

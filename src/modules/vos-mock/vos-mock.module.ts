@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { VosMockController } from './vos-mock.controller';
 import { VosMockService } from './vos-mock.service';
-import { PasskeysService } from './passkeys.service';
+import { StorageMiddleware } from './storage.middleware';
+import { ConfigModule } from '../../config/config.module';
 
 @Module({
-  imports: [],
+  imports: [ConfigModule],
   controllers: [VosMockController],
-  providers: [VosMockService, PasskeysService],
-  exports: [VosMockService, PasskeysService],
+  providers: [VosMockService, StorageMiddleware],
+  exports: [VosMockService],
 })
 export class VosMockModule {} 
