@@ -181,7 +181,7 @@ export class VosMockController {
   async register(@Body() body: { userId: string; hashedUserId: string; credentialId: string; address: string; attestationResponse: any }, @Req() req: Request) {
     const { userId, hashedUserId, credentialId, address, attestationResponse } = body;
 
-    console.log(userId, credentialId, address, attestationResponse);
+    console.log(userId, hashedUserId, credentialId, address, attestationResponse);
     
     if (!userId || !attestationResponse) {
       throw new HttpException('User ID and attestation response are required', HttpStatus.BAD_REQUEST);
