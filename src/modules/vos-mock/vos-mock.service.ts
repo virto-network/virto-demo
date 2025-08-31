@@ -45,7 +45,7 @@ export class VosMockService {
         },
         challenge: challengeHex,
         pubKeyCredParams: [{ type: "public-key", alg: -7 }],
-        authenticatorSelection: { userVerification: "preferred" },
+        authenticatorSelection: { userVerification: "required" },
         timeout: 60000,
         attestation: "none",
     };
