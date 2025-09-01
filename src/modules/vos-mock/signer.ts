@@ -1,7 +1,6 @@
 import {
     DEV_PHRASE,
     entropyToMiniSecret,
-    KeyPair,
     mnemonicToEntropy,
     ss58Encode,
 } from "@polkadot-labs/hdkd-helpers";
@@ -18,18 +17,9 @@ const seed = entropyToMiniSecret(entropy);
 const derive = sr25519CreateDerive(seed);
 
 
-let publicKey: Uint8Array;
-let keyPair: KeyPair;
-
-if (configService.getDerivePath()) {
-    keyPair = derive(configService.getDerivePath());
-    publicKey = keyPair.publicKey;
-} else {
-    keyPair = derive("");
-    publicKey = keyPair.publicKey;
-}
-
 // Example usage for generating a sr25519 keypair with hard derivation
+const keyPair = derive(configService.getDerivePath() || "");
+const publicKey = keyPair.publicKey;
 
 export const polkadotSigner = getPolkadotSigner(
     publicKey,
