@@ -34,8 +34,12 @@ export class ConfigService {
     return this.get('KREIVO_PROVIDER');
   }
 
-  getSeed(): string {
-    return this.get('SEED');
+  getPhrase(): string {
+    return this.get('PHRASE');
+  }
+
+  getDerivePath(): string {
+    return this.get('DERIVE_PATH');
   }
 
   getPublicIp(): string {
