@@ -11,11 +11,16 @@ export class ConfigService {
     const envFileExists = fs.existsSync(envFilePath);
 
     this.envConfig = dotenv.parse(envFileExists ? fs.readFileSync(envFilePath) : '');
+    console.log(this.envConfig);
   }
 
   get(key: string): string {
-    const hello = this.envConfig[key] || process.env[key];
+    const hello = this.envConfig[key] ?? process.env[key];
 
+    if (hello === "") {
+      return hello;
+    }
+    
     if (!hello) {
       throw new Error(`Environment variable ${key} is not set.`);
     }
@@ -39,7 +44,7 @@ export class ConfigService {
   }
 
   getDerivePath(): string {
-    return this.get('DERIVE_PATH');
+    return this.get('DERIVE_PATH') || "";
   }
 
   getPublicIp(): string {
