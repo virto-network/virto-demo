@@ -58,4 +58,8 @@ export class ConfigService {
   getSigningServiceUrl(): string {
     return this.get('SIGNING_SERVICE_URL');
   }
+
+  getCommunityId(): string {
+    return this.get('COMMUNITY_ID');
+  }
 }
