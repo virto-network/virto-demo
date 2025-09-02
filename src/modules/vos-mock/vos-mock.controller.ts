@@ -349,4 +349,41 @@ export class VosMockController {
       );
     }
   }
+  @Post('add-member')
+  async addMember(@Body() body: { userId: string }, @Req() req: Request) {
+    const { userId } = body;
+
+    if (!userId) {
+      throw new HttpException('User ID is required', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      const storage = req.storage as InMemorySessionStorage;
+      const result = await this.vosMockService.addMember(userId, storage);
+      return result;
+    } catch (error) {
+      console.error('Add member error:', error);
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to add member',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+  @Get('is-member')
+  async isMember(@Query('address') address: string, @Req() req: Request) {
+    if (!address) {
+      throw new HttpException('Address is required', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      const result = await this.vosMockService.isMember(address);
+      return result;
+    } catch (error) {
+      console.error('Is member error:', error);
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed to check if user is member',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }

@@ -86,15 +86,12 @@ export class VosMockService {
     });
 
     try {
-      const tx1Res = await registerCharlotte.signAndSubmit(polkadotSigner);
-      console.log({ tx1Res });
-      
-      const addMembership = kreivoApi.tx.Communities.add_member({
-        who: MultiAddress.Id(address),
-      });
-      
-      const tx2Res = await addMembership.signAndSubmit(polkadotSigner);
-      console.log(tx2Res);
+      const registerRes = await registerCharlotte.signAndSubmit(polkadotSigner);
+      console.log({ registerRes });
+
+      if (!registerRes.ok) {
+        throw new Error('Failed to register');
+      }
       
       sessionStorage.set(userId, { credentialId, address });
 
@@ -137,5 +134,81 @@ export class VosMockService {
     };
 
     return publicKey;
+  }
+
+  async addMember(userId: string, storage: InMemorySessionStorage) {
+    const client = createClient(
+      getWsProvider(this.configService.getKreivoProvider())
+    );
+
+    const storedData = storage.get(userId);
+
+    if (!storedData) {
+      throw new Error('User data not found');
+    }
+
+    const { address } = storedData;
+
+    if (!address) {
+      throw new Error('Address not found');
+    }
+  
+    const kreivoApi = client.getTypedApi(kreivo);
+
+    const addMembership = kreivoApi.tx.Communities.add_member({
+      who: MultiAddress.Id(address),
+    }).decodedCall;
+
+    const transfer = kreivoApi.tx.Balances.transfer_keep_alive({
+      dest: MultiAddress.Id(address),
+      value: BigInt("100000000000000"),
+    }).decodedCall;
+
+    const transferUSD = kreivoApi.tx.Assets.transfer_keep_alive({
+      id: {
+        type: "Here",
+        value: 1, // Kusama 50000002 Paseo 50000087
+      },
+      target: MultiAddress.Id(address),
+      amount: BigInt("100000000000000"),
+    }).decodedCall;
+
+    const addMember = kreivoApi.tx.Utility.batch_all({
+      calls: [
+        addMembership,
+        transfer,
+      ],
+    });    
+    
+    const addMemberRes = await addMember.signAndSubmit(polkadotSigner);
+    console.log(addMemberRes);
+
+    if (!addMemberRes.ok) {
+      throw new Error('Failed to add member');
+    }
+
+    return {
+      ok: true,
+    };
+  }
+
+  async isMember(address: string) {
+    const client = createClient(
+      getWsProvider(this.configService.getKreivoProvider())
+    );
+
+    const kreivoApi = client.getTypedApi(kreivo);
+
+    const membershipKeys = await kreivoApi.query.CommunityMemberships.Account.getEntries(
+      address, parseInt(this.configService.getCommunityId())
+    );
+  
+    if (!membershipKeys) {
+      throw new Error('No membership keys found');
+    }
+
+    return {
+      ok: true,
+    };
   }
 } 
