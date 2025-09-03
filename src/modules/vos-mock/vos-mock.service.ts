@@ -161,7 +161,7 @@ export class VosMockService {
 
     const transfer = kreivoApi.tx.Balances.transfer_keep_alive({
       dest: MultiAddress.Id(address),
-      value: BigInt("100000000000000"),
+      value: BigInt("100000000000"),
     }).decodedCall;
 
     const transferUSD = kreivoApi.tx.Assets.transfer_keep_alive({
@@ -170,7 +170,7 @@ export class VosMockService {
         value: 1, // Kusama 50000002 Paseo 50000087
       },
       target: MultiAddress.Id(address),
-      amount: BigInt("100000000000000"),
+      amount: BigInt("100000000000"),
     }).decodedCall;
 
     const addMember = kreivoApi.tx.Utility.batch_all({
