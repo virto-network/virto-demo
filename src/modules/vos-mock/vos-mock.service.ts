@@ -129,7 +129,7 @@ export class VosMockService {
           type: "public-key",
         },
       ],
-      userVerification: "preferred",
+      userVerification: "required",
       timeout: 60_000,
     };
 
