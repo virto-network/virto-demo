@@ -202,9 +202,11 @@ export class VosMockService {
     const membershipKeys = await kreivoApi.query.CommunityMemberships.Account.getEntries(
       address, parseInt(this.configService.getCommunityId())
     );
-  
-    if (!membershipKeys) {
-      throw new Error('No membership keys found');
+
+    console.log({membershipKeys});
+
+    if (membershipKeys.length === 0) {
+      throw new Error('Not a member');
     }
 
     return {
