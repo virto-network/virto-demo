@@ -2,7 +2,7 @@ import { Controller, Post, Body, HttpException, HttpStatus, Req, Get, Query } fr
 import { VosMockService } from './vos-mock.service';
 import { BaseProfile, User } from './types';
 import { Request } from 'express';
-import { InMemorySessionStorage } from './storage';
+import { SQLiteSessionStorage } from './storage';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 
@@ -114,7 +114,7 @@ export class VosMockController {
     }
 
     try {
-      const storage = req.storage as InMemorySessionStorage;
+      const storage = req.storage as SQLiteSessionStorage;
       
       // Create a user object from query parameters
       const user: User<BaseProfile> = {
@@ -188,7 +188,7 @@ export class VosMockController {
     }
 
     try {
-      const storage = req.storage as InMemorySessionStorage;
+      const storage = req.storage as SQLiteSessionStorage;
       
       const result = await this.vosMockService.register(userId, hashedUserId, credentialId, address, attestationResponse, storage);
       return result;
@@ -256,7 +256,7 @@ export class VosMockController {
     }
 
     try {
-      const storage = req.storage as InMemorySessionStorage;
+      const storage = req.storage as SQLiteSessionStorage;
       const assertionOptions = await this.vosMockService.assertion(userId, challenge, storage);
       return assertionOptions;
     } catch (error) {
@@ -291,9 +291,9 @@ export class VosMockController {
     console.log("checkUserRegistered", userId);
 
     try {
-      const storage = req.storage as InMemorySessionStorage;
+      const storage = req.storage as SQLiteSessionStorage;
       console.log("storage", storage);
-      const storedData = storage.get(userId);
+      const storedData = await storage.get(userId);
       return { ok: !!storedData && !!storedData.credentialId };
     } catch (error) {
       console.error('Check user registered error:', error);
@@ -328,8 +328,8 @@ export class VosMockController {
     console.log("getUserAddress", userId);
 
     try {
-      const storage = req.storage as InMemorySessionStorage;
-      const storedData = storage.get(userId);
+      const storage = req.storage as SQLiteSessionStorage;
+      const storedData = await storage.get(userId);
       
       if (!storedData || !storedData.address) {
         throw new HttpException('User not found or not registered', HttpStatus.NOT_FOUND);
@@ -358,7 +358,7 @@ export class VosMockController {
     }
 
     try {
-      const storage = req.storage as InMemorySessionStorage;
+      const storage = req.storage as SQLiteSessionStorage;
       const result = await this.vosMockService.addMember(userId, storage);
       return result;
     } catch (error) {
