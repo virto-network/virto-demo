@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InMemorySessionStorage } from './storage';
+import { SQLiteSessionStorage } from './storage';
 import { BaseProfile, User } from './types';
 import { hashUserId } from './utils';
 import { kreivo, MultiAddress } from "@polkadot-api/descriptors";
@@ -56,7 +56,7 @@ export class VosMockService {
   /**
    * Process attestation response and register the passkey
    */
-  async register(userId: any, hashedUserId: string, credentialId: string, address: string, attestationResponse: any, sessionStorage: InMemorySessionStorage): Promise<any> {
+  async register(userId: any, hashedUserId: string, credentialId: string, address: string, attestationResponse: any, sessionStorage: SQLiteSessionStorage): Promise<any> {
     console.log('Hashing user ID...');
 
     const client = createClient(
@@ -93,7 +93,7 @@ export class VosMockService {
         throw new Error('Failed to register');
       }
       
-      sessionStorage.set(userId, { credentialId, address });
+      await sessionStorage.set(userId, { credentialId, address });
 
       return {
         ok: true,
@@ -108,8 +108,8 @@ export class VosMockService {
   /**
    * Generate assertion options for authenticating with a passkey
    */
-  async assertion(userId: string, challengeHex: string, sessionStorage: InMemorySessionStorage): Promise<any> {
-    const storedData = sessionStorage.get(userId);
+  async assertion(userId: string, challengeHex: string, sessionStorage: SQLiteSessionStorage): Promise<any> {
+    const storedData = await sessionStorage.get(userId);
     console.log("assertion", userId, challengeHex, storedData);
 
     if (!storedData) {
@@ -117,7 +117,7 @@ export class VosMockService {
     }
     
     // Update storage with new block number
-    sessionStorage.set(userId, { ...storedData });
+    await sessionStorage.set(userId, { ...storedData });
 
     const { credentialId } = storedData;
 
@@ -136,12 +136,12 @@ export class VosMockService {
     return publicKey;
   }
 
-  async addMember(userId: string, storage: InMemorySessionStorage) {
+  async addMember(userId: string, storage: SQLiteSessionStorage) {
     const client = createClient(
       getWsProvider(this.configService.getKreivoProvider())
     );
 
-    const storedData = storage.get(userId);
+    const storedData = await storage.get(userId);
 
     if (!storedData) {
       throw new Error('User data not found');
