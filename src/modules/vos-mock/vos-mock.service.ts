@@ -86,10 +86,26 @@ export class VosMockService {
     });
 
     try {
-      const registerRes = await registerCharlotte.signAndSubmit(polkadotSigner);
+      const registerRes = await new Promise((resolve, reject) => {
+        registerCharlotte.signSubmitAndWatch(polkadotSigner)
+          .subscribe({
+            next: (event) => {
+              console.info('Transaction event:', event.type);
+              if (event.type === 'txBestBlocksState') {
+                resolve({ ok: true, txHash: event.txHash, blockHash: event.found });
+              }
+            },
+            error: (error) => {
+              console.error('Transaction error:', error);
+              reject(error);
+            }
+          });
+      });
+
       console.log({ registerRes });
 
-      if (!registerRes.ok) {
+      const result = registerRes as { ok: boolean };
+      if (!result.ok) {
         throw new Error('Failed to register');
       }
       
@@ -180,10 +196,26 @@ export class VosMockService {
       ],
     });    
     
-    const addMemberRes = await addMember.signAndSubmit(polkadotSigner);
+    const addMemberRes = await new Promise((resolve, reject) => {
+      addMember.signSubmitAndWatch(polkadotSigner)
+        .subscribe({
+          next: (event) => {
+            console.info('Add member transaction event:', event.type);
+            if (event.type === 'txBestBlocksState') {
+              resolve({ ok: true, txHash: event.txHash, blockHash: event.found });
+            }
+          },
+          error: (error) => {
+            console.error('Add member transaction error:', error);
+            reject(error);
+          }
+        });
+    });
+
     console.log(addMemberRes);
 
-    if (!addMemberRes.ok) {
+    const result = addMemberRes as { ok: boolean };
+    if (!result.ok) {
       throw new Error('Failed to add member');
     }
 
