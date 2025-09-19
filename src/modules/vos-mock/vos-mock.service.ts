@@ -145,7 +145,7 @@ export class VosMockService {
           type: "public-key",
         },
       ],
-      userVerification: "required",
+      userVerification: "preferred",
       timeout: 60_000,
     };
 
