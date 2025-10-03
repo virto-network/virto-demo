@@ -5,6 +5,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 import { ApiDocsModule } from './modules/api-docs/api-docs.module';
+import { MembershipsModule } from './modules/memberships/memberships.module';
 import { StorageMiddleware } from './modules/vos-mock/storage.middleware';
 
 dotenv.config();
@@ -18,6 +19,7 @@ dotenv.config();
     VosMockModule,
     ConfigModule,
     ApiDocsModule,
+    MembershipsModule,
   ],
   controllers: [],
   providers: [],
