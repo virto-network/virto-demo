@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { SQLiteSessionStorage } from './storage';
 import { BaseProfile, User } from './types';
 import { hashUserId } from './utils';
@@ -7,6 +7,7 @@ import { polkadotSigner } from './signer';
 import { Binary, createClient } from "polkadot-api";
 import { getWsProvider } from "polkadot-api/ws-provider/node";
 import { ConfigService } from '../../config/config.service';
+import { MatrixService } from '../matrix/matrix.service';
 
 @Injectable()
 export class VosMockService {
@@ -15,6 +16,8 @@ export class VosMockService {
 
   constructor(
     private readonly configService: ConfigService,
+    @Inject(forwardRef(() => MatrixService))
+    private readonly matrixService: MatrixService,
   ) {
     this.rpName = process.env.RP_NAME || 'Example RP';
 
@@ -153,6 +156,15 @@ export class VosMockService {
   }
 
   async addMember(userId: string, storage: SQLiteSessionStorage) {
+    console.log('Checking Matrix membership for user:', userId);
+    const isMemberOfMatrix = await this.matrixService.isMember(userId);
+    
+    if (!isMemberOfMatrix) {
+      throw new Error(`User ${userId} is not a member of the Matrix room #kreivo:virto.community`);
+    }
+
+    console.log('User is a member of Matrix room, proceeding with addMember...');
+
     const client = createClient(
       getWsProvider(this.configService.getKreivoProvider())
     );
@@ -175,24 +187,9 @@ export class VosMockService {
       who: MultiAddress.Id(address),
     }).decodedCall;
 
-    const transfer = kreivoApi.tx.Balances.transfer_keep_alive({
-      dest: MultiAddress.Id(address),
-      value: BigInt("100000000000"),
-    }).decodedCall;
-
-    const transferUSD = kreivoApi.tx.Assets.transfer_keep_alive({
-      id: {
-        type: "Here",
-        value: 1, // Kusama 50000002 Paseo 50000087
-      },
-      target: MultiAddress.Id(address),
-      amount: BigInt("100000000000"),
-    }).decodedCall;
-
     const addMember = kreivoApi.tx.Utility.batch_all({
       calls: [
         addMembership,
-        transfer,
       ],
     });    
     

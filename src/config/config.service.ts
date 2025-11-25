@@ -62,4 +62,16 @@ export class ConfigService {
   getCommunityId(): string {
     return this.get('COMMUNITY_ID');
   }
+
+  getMatrixUser(): string {
+    return this.get('MATRIX_USER');
+  }
+
+  getMatrixPass(): string {
+    return this.get('MATRIX_PASS');
+  }
+
+  getMatrixHomeserver(): string {
+    return this.get('MATRIX_HOMESERVER')
+  }
 }
