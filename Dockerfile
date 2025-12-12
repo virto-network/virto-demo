@@ -12,11 +12,7 @@ RUN npm ci
 
 COPY . .
 
-RUN mkdir -p src/static
-RUN mkdir -p dist/static
-
 RUN npm run build
-RUN cp -r src/static/* dist/static/ || true
 
 FROM node:22-alpine
 

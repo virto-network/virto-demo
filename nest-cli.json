@@ -8,10 +8,6 @@
       {
         "include": "**/*.html",
         "outDir": "dist/"
-      },
-      {
-        "include": "static/**/*",
-        "outDir": "dist/" 
       }
     ],
     "watchAssets": true
