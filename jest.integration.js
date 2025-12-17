@@ -6,5 +6,7 @@ module.exports = {
  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
  detectOpenHandles: false,
  forceExit: true,
- testTimeout: 15000
+ testTimeout: 60000,
+ globalSetup: '<rootDir>/test/setup.ts',
+ globalTeardown: '<rootDir>/test/teardown.ts',
 };
