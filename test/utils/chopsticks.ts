@@ -14,7 +14,7 @@ export const getChopsticksProvider = () =>
 export const startChopsticks = async () => {
   const logStream = createWriteStream("./chopsticks.log")
   const logStreamErr = createWriteStream("./chopsticks_err.log")
-  const chopsticksProcess = spawn("pnpm", [
+  const chopsticksProcess = spawn("npx", [
     "chopsticks",
     `--endpoint=${ENDPOINT}`,
     `--port=${PORT}`,
