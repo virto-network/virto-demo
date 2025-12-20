@@ -33,14 +33,14 @@ jobs:
 
     - name: Run integration tests
       env:
-        SEED: "//Alice"
+        PHRASE: ${{ secrets.PHRASE }}
         PORT: 3000
         NODE_ENV: test
       run: just test-integration
 
     - name: Start server in background
       env:
-        SEED: "//Alice"
+        PHRASE: ${{ secrets.PHRASE }}
         PORT: 3000
         NODE_ENV: test
       run: |
