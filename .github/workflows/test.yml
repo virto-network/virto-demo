@@ -38,6 +38,25 @@ jobs:
         NODE_ENV: test
       run: just test-integration
 
+    - name: Display chopsticks logs on failure
+      if: failure()
+      run: |
+        echo "=== Chopsticks stdout logs ==="
+        cat chopsticks.log || echo "No chopsticks.log found"
+        echo ""
+        echo "=== Chopsticks stderr logs ==="
+        cat chopsticks_err.log || echo "No chopsticks_err.log found"
+
+    - name: Upload chopsticks logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: chopsticks-logs
+        path: |
+          chopsticks.log
+          chopsticks_err.log
+        retention-days: 7
+
     - name: Start server in background
       env:
         PHRASE: ${{ secrets.PHRASE }}
