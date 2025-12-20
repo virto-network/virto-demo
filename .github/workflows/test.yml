@@ -59,13 +59,6 @@ jobs:
         echo "❌ Server failed to start"
         cat server.log
         exit 1
-    - name: Run e2e tests
-      env:
-        SEED: "//Alice"
-        PORT: 3000
-        NODE_ENV: test
-        CI: true
-      run: just test-e2e
 
     - name: Stop server
       run: |

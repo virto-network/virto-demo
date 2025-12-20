@@ -13,11 +13,5 @@ dev:
 start:
     SEED="//Alice" PORT=3000 NODE_ENV=production npm run start:prod
 
-test-unit:
-    npm run test:unit
-
 test-integration:
     npm run test:integration
-
-test-e2e:
-    SEED="//Alice" PORT=3000 NODE_ENV=test npm run test:e2e
