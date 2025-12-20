@@ -4,12 +4,12 @@ import { createClient, PolkadotClient } from "polkadot-api"
 import { getWsProvider } from "polkadot-api/ws-provider/node"
 
 const ENDPOINT = "wss://testnet.kreivo.kippu.rocks"
-const PORT = 8000
+const CHOPSTICKS_PORT = process.env.CHOPSTICKS_PORT || "8000"
 
 let cleanup = () => {}
 
 export const getChopsticksProvider = () =>
-  getWsProvider(`ws://localhost:${PORT}`)
+  getWsProvider(`ws://localhost:${CHOPSTICKS_PORT}`)
 
 export const startChopsticks = async () => {
   const logStream = createWriteStream("./chopsticks.log")
@@ -17,7 +17,7 @@ export const startChopsticks = async () => {
   const chopsticksProcess = spawn("npx", [
     "chopsticks",
     `--endpoint=${ENDPOINT}`,
-    `--port=${PORT}`,
+    `--port=${CHOPSTICKS_PORT}`,
   ])
   chopsticksProcess.stdout.pipe(logStream)
   chopsticksProcess.stderr.pipe(logStreamErr)
