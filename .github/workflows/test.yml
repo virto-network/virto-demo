@@ -35,7 +35,6 @@ jobs:
       timeout-minutes: 4
       env:
         PHRASE: ${{ secrets.PHRASE }}
-        PORT: 3000
         CHOPSTICKS_PORT: 8000
         NODE_ENV: test
       run: just test-integration

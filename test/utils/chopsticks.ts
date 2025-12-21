@@ -12,6 +12,7 @@ export const getChopsticksProvider = () =>
   getWsProvider(`ws://localhost:${CHOPSTICKS_PORT}`)
 
 export const startChopsticks = async () => {
+  console.log("Starting Chopsticks on port", CHOPSTICKS_PORT)
   const logStream = createWriteStream("./chopsticks.log")
   const logStreamErr = createWriteStream("./chopsticks_err.log")
   const chopsticksProcess = spawn("npx", [
