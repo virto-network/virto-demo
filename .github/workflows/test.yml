@@ -35,6 +35,7 @@ jobs:
       timeout-minutes: 4
       env:
         PHRASE: ${{ secrets.PHRASE }}
+        KREIVO_PROVIDER: ws://localhost:8000
         DERIVE_PATH: 
         CHOPSTICKS_PORT: 8000
         NODE_ENV: test
