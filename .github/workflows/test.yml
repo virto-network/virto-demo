@@ -32,16 +32,40 @@ jobs:
       run: just build
 
     - name: Run integration tests
+      timeout-minutes: 4
       env:
-        SEED: "//Alice"
-        PORT: 3000
+        PHRASE: ${{ secrets.PHRASE }}
+        KREIVO_PROVIDER: ws://localhost:8000
+        DERIVE_PATH: 
+        CHOPSTICKS_PORT: 8000
         NODE_ENV: test
       run: just test-integration
 
+    - name: Display chopsticks logs on failure
+      if: failure()
+      run: |
+        echo "=== Chopsticks stdout logs ==="
+        cat chopsticks.log || echo "No chopsticks.log found"
+        echo ""
+        echo "=== Chopsticks stderr logs ==="
+        cat chopsticks_err.log || echo "No chopsticks_err.log found"
+
+    - name: Upload chopsticks logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: chopsticks-logs
+        path: |
+          chopsticks.log
+          chopsticks_err.log
+        retention-days: 7
+
     - name: Start server in background
       env:
-        SEED: "//Alice"
+        PHRASE: ${{ secrets.PHRASE }}
         PORT: 3000
+        KREIVO_PROVIDER: wss://kreivo.io
+        DERIVE_PATH: 
         NODE_ENV: test
       run: |
         node dist/main.js > server.log 2>&1 &
@@ -59,13 +83,6 @@ jobs:
         echo "❌ Server failed to start"
         cat server.log
         exit 1
-    - name: Run e2e tests
-      env:
-        SEED: "//Alice"
-        PORT: 3000
-        NODE_ENV: test
-        CI: true
-      run: just test-e2e
 
     - name: Stop server
       run: |

@@ -157,6 +157,8 @@ export class VosMockService {
       getWsProvider(this.configService.getKreivoProvider())
     );
 
+    console.log("addMember", userId);
+
     const storedData = await storage.get(userId);
 
     if (!storedData) {

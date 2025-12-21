@@ -13,7 +13,7 @@ dotenv.config();
   imports: [
     ServeStaticModule.forRoot({
       serveRoot: '/',
-      rootPath: join(process.cwd(), 'dist', 'static')
+      rootPath: join(process.cwd(), 'dist')
     }),
     VosMockModule,
     ConfigModule,
