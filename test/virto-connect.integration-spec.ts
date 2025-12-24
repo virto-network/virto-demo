@@ -119,7 +119,8 @@ describe('API Integration Tests', () => {
   }
 
   async function blockHashChallenge(ctx: number, xtc: Uint8Array) {
-    const client = createClient(getWsProvider(process.env.KREIVO_PROVIDER || 'ws://localhost:21000'));
+    console.log("chopsticksWsUrl blockchallenge", chopsticksWsUrl);
+    const client = createClient(getWsProvider(chopsticksWsUrl));
     const hash = await client._request("chain_getBlockHash", [ctx]);
     const blockHash = Binary.fromHex(hash);
 
@@ -219,7 +220,9 @@ describe('API Integration Tests', () => {
 
         const passSigner = new KreivoPassSigner(wa);
 
-        const client = createClient(getWsProvider(process.env.KREIVO_PROVIDER || 'ws://localhost:21000'));
+        const client = createClient(getWsProvider(chopsticksWsUrl || 'ws://localhost:21000'));
+
+        console.log("chopsticksWsUrl client", chopsticksWsUrl);
         const finalizedBlock = await client.getFinalizedBlock();
         const attestation = await wa.register(finalizedBlock.number);
 
