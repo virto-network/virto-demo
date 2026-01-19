@@ -1,5 +1,7 @@
 export { type BlockNumber } from "@polkadot/types/interfaces";
 export { type Compact } from "@polkadot/types";
+import { Bin, Binary } from "@polkadot-api/substrate-bindings";
+import { Codec, Struct, u32 } from "scale-ts";
 
 
 export interface BaseProfile {
@@ -50,3 +52,39 @@ export type Assertion<Cx> = {
   clientData: Uint8Array;
   signature: Uint8Array;
 };
+
+export type SubstrateKeyRegistration = {
+  message: {
+    context: number;
+    challenge: string;
+    authority_id: string;
+  };
+  public: string;
+  signature: string;
+};
+
+// SCALE codecs for SubstrateKey
+export type TSignedMessage = {
+  context: number;
+  challenge: Binary;
+  authority_id: Binary;
+};
+
+export const SignedMessage: Codec<TSignedMessage> = Struct({
+  context: u32,
+  challenge: Bin(),
+  authority_id: Bin(32),
+});
+
+export type TKeyRegistration = {
+  message: TSignedMessage;
+  public: Binary;
+  signature: Binary;
+};
+
+export const KeyRegistration: Codec<TKeyRegistration> = Struct({
+  message: SignedMessage,
+  public: Bin(32),
+  signature: Bin(64),
+});
+

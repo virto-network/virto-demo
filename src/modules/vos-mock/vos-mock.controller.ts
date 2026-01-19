@@ -386,4 +386,67 @@ export class VosMockController {
       );
     }
   }
+  @ApiOperation({ summary: 'Complete Substrate Key registration process' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        userId: { type: 'string', description: 'User ID', example: 'test' },
+        hashedUserId: { type: 'string', description: 'Hashed user ID as hex string', example: '0xf0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b' },
+        address: { type: 'string', description: 'Substrate account address', example: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' },
+        keyRegistration: { 
+          type: 'object', 
+          description: 'Substrate key registration data',
+          properties: {
+            message: {
+              type: 'object',
+              properties: {
+                context: { type: 'number', description: 'Block number', example: 1107519 },
+                challenge: { type: 'string', description: 'Challenge as hex string', example: '0x...' },
+                authority_id: { type: 'string', description: 'Authority ID as hex string', example: '0x6b726569766f5f7000000000000000000000000000000000000000000000000' }
+              }
+            },
+            public: { type: 'string', description: 'Public key as hex string', example: '0x...' },
+            signature: { type: 'string', description: 'Signature as hex string', example: '0x...' }
+          }
+        }
+      },
+      required: ['userId', 'hashedUserId', 'address', 'keyRegistration']
+    }
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Substrate key registration completed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        ok: { type: 'boolean', description: 'Indicates successful registration', example: true }
+      }
+    }
+  })
+  @ApiResponse({ status: 400, description: 'Bad request - Missing required parameters' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @Post('register-substrate')
+  async registerSubstrate(@Body() body: { userId: string; hashedUserId: string; address: string; keyRegistration: any }, @Req() req: Request) {
+    const { userId, hashedUserId, address, keyRegistration } = body;
+
+    console.log('Substrate Key Registration:', userId, hashedUserId, address, keyRegistration);
+    
+    if (!userId || !hashedUserId || !address || !keyRegistration) {
+      throw new HttpException('User ID, hashed user ID, address, and key registration are required', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      const storage = req.storage as SQLiteSessionStorage;
+      
+      const result = await this.vosMockService.registerSubstrateKey(userId, hashedUserId, address, keyRegistration, storage);
+      return result;
+    } catch (error) {
+      console.error('Register substrate error:', error);
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Failed during substrate key registration',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }

@@ -3,10 +3,10 @@
   "descriptorPath": ".papi/descriptors",
   "entries": {
     "kreivo": {
-      "wsUrl": "wss://testnet.kreivo.kippu.rocks",
+      "wsUrl": "ws://localhost:21000",
       "metadata": ".papi/metadata/kreivo.scale",
-      "genesis": "0x5cdd465e1273859192b043721e63ad19c8585f7c9779c53cba1d3260549b60ad",
-      "codeHash": "0x55214ee38491baac38fc5e5b6ac366a14124fd042f03b030414bf0ce70b8dcc9"
+      "genesis": "0x8f1e2abdcec389498fa752eca7f1d92e12447ecd08c517d2fb53adc1739b9f5f",
+      "codeHash": "0xfb0172b457981913907180632f8b14eaaefd70d726bda419e751763b5d803617"
     },
     "kusama": {
       "chain": "ksmcc3",

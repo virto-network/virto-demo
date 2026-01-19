@@ -4,9 +4,10 @@ import { BaseProfile, User } from './types';
 import { hashUserId } from './utils';
 import { kreivo, MultiAddress } from "@polkadot-api/descriptors";
 import { polkadotSigner } from './signer';
-import { Binary, createClient } from "polkadot-api";
+import { createClient, Binary } from "polkadot-api";
 import { getWsProvider } from "polkadot-api/ws-provider/node";
 import { ConfigService } from '../../config/config.service';
+import { encodeAddress } from '@polkadot/util-crypto';
 
 @Injectable()
 export class VosMockService {
@@ -266,5 +267,95 @@ export class VosMockService {
     return {
       ok: true,
     };
+  }
+
+  async registerSubstrateKey(
+    userId: string,
+    hashedUserId: string,
+    address: string,
+    keyRegistration: any,
+    sessionStorage: SQLiteSessionStorage
+  ): Promise<any> {
+    console.log('Registering substrate key for user:', userId);
+
+    const client = createClient(
+      getWsProvider(this.configService.getKreivoProvider())
+    );
+  
+    const kreivoApi = client.getTypedApi(kreivo);
+
+    console.log('=== Substrate Key Registration Debug ===');
+    console.log('HashedUserId:', hashedUserId);
+    console.log('Public key hex:', keyRegistration.public);
+    console.log('Provided address:', address);
+    console.log('Context:', keyRegistration.message.context);
+    console.log('Challenge:', keyRegistration.message.challenge);
+    console.log('Authority ID:', keyRegistration.message.authority_id);
+    console.log('Signature:', keyRegistration.signature);
+    console.log('Signature length:', keyRegistration.signature.length);
+    console.log('========================================');
+
+    
+    const registerSubstrateKey = kreivoApi.tx.Pass.register({
+      user: Binary.fromHex(hashedUserId),
+      attestation: {
+        type: "SubstrateKey",
+        value: {
+          message: {
+            context: keyRegistration.message.context,
+            challenge: Binary.fromHex(keyRegistration.message.challenge),
+            authority_id: Binary.fromHex(keyRegistration.message.authority_id)
+          },
+          public: address, // Pass account address (SS58 string)
+          signature: {
+            type: "Ed25519",
+            value: Binary.fromHex(keyRegistration.signature) // 64-byte Ed25519 signature
+          }
+        } as any
+      } as any,
+    });
+
+    try {
+      const registerRes = await new Promise((resolve, reject) => {
+        registerSubstrateKey.signSubmitAndWatch(polkadotSigner)
+          .subscribe({
+            next: (event: any) => {
+              console.info('Substrate Key Registration event:', event.type);
+              if (event.type === 'txBestBlocksState') {
+                if (event.ok) {
+                  resolve({ ok: true, txHash: event.txHash, blockHash: event.found });
+                } else {
+                  if (event.dispatchError) {
+                    console.error('Full dispatchError:', JSON.stringify(event.dispatchError, null, 2));
+                    if (event.dispatchError.type === 'Module' && event.dispatchError.value) {
+                      console.error('Module error details:', event.dispatchError.value);
+                    }
+                  }
+                  reject(new Error('Failed to register substrate key: ' + (event.dispatchError ? JSON.stringify(event.dispatchError) : 'Unknown error')));
+                }
+              }
+            },
+            error: (error) => {
+              console.error('Transaction error:', error);
+              reject(error);
+            }
+          });
+      });
+
+      console.log({ registerRes });
+
+      await sessionStorage.set(userId, { 
+        credentialId: `substrate_${userId}`,
+        address 
+      });
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      console.log('Error occurred during substrate key registration');
+      console.error('Error sending extrinsic:', error);
+      throw new Error('Failed to send substrate key registration extrinsic to server');
+    }
   }
 } 
