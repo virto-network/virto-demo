@@ -36,21 +36,21 @@ export class VosMockService {
     const userIdArray = Array.from(hashedUserId);
 
     const publicKey = {
-        rp: {
-            name: this.rpName,
-        },
-        user: {
-            id: userIdArray,
-            name: user.profile.id.toString(),
-            displayName: user.profile.name as string ?? user.profile.id.toString(),
-        },
-        challenge: challengeHex,
-        pubKeyCredParams: [{ type: "public-key", alg: -7 }],
-        authenticatorSelection: { userVerification: "required" },
-        timeout: 60000,
-        attestation: "none",
+      rp: {
+        name: this.rpName,
+      },
+      user: {
+        id: userIdArray,
+        name: user.profile.id.toString(),
+        displayName: user.profile.name as string ?? user.profile.id.toString(),
+      },
+      challenge: challengeHex,
+      pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+      authenticatorSelection: { userVerification: "required" },
+      timeout: 60000,
+      attestation: "none",
     };
-    
+
     return publicKey;
   }
 
@@ -63,12 +63,12 @@ export class VosMockService {
     const client = createClient(
       getWsProvider(this.configService.getKreivoProvider())
     );
-  
+
     const kreivoApi = client.getTypedApi(kreivo);
 
     // Convert client_data JSON string to hex
     const clientDataHex = '0x' + Buffer.from(attestationResponse.client_data, 'utf8').toString('hex');
-    
+
     const registerCharlotte = kreivoApi.tx.Pass.register({
       user: Binary.fromHex(hashedUserId),
       attestation: {
@@ -119,7 +119,7 @@ export class VosMockService {
       if (!result.ok) {
         throw new Error('Failed to register');
       }
-      
+
       await sessionStorage.set(userId, { credentialId, address });
 
       return {
@@ -142,7 +142,7 @@ export class VosMockService {
     if (!storedData) {
       throw new Error('User data not found');
     }
-    
+
     // Update storage with new block number
     await sessionStorage.set(userId, { ...storedData });
 
@@ -181,7 +181,7 @@ export class VosMockService {
     if (!address) {
       throw new Error('Address not found');
     }
-  
+
     const kreivoApi = client.getTypedApi(kreivo);
 
     const addMembership = kreivoApi.tx.Communities.add_member({
@@ -207,8 +207,8 @@ export class VosMockService {
         addMembership,
         transfer,
       ],
-    });    
-    
+    });
+
     const addMemberRes = await new Promise((resolve, reject) => {
       addMember.signSubmitAndWatch(polkadotSigner)
         .subscribe({
@@ -258,7 +258,7 @@ export class VosMockService {
       address, parseInt(this.configService.getCommunityId())
     );
 
-    console.log({membershipKeys});
+    console.log({ membershipKeys });
 
     if (membershipKeys.length === 0) {
       throw new Error('Not a member');
@@ -281,7 +281,7 @@ export class VosMockService {
     const client = createClient(
       getWsProvider(this.configService.getKreivoProvider())
     );
-  
+
     const kreivoApi = client.getTypedApi(kreivo);
 
     console.log('=== Substrate Key Registration Debug ===');
@@ -295,7 +295,14 @@ export class VosMockService {
     console.log('Signature length:', keyRegistration.signature.length);
     console.log('========================================');
 
-    
+    // DEBUG: Check Block Hash
+    try {
+      const blockHash = await kreivoApi.query.System.BlockHash.getValue(keyRegistration.message.context);
+      console.log(`Server BlockHash for context ${keyRegistration.message.context}:`, blockHash.asHex());
+    } catch (e) {
+      console.error("Failed to fetch block hash for context:", e);
+    }
+
     const registerSubstrateKey = kreivoApi.tx.Pass.register({
       user: Binary.fromHex(hashedUserId),
       attestation: {
@@ -309,7 +316,7 @@ export class VosMockService {
           public: address, // Pass account address (SS58 string)
           signature: {
             type: "Ed25519",
-            value: Binary.fromHex(keyRegistration.signature) // 64-byte Ed25519 signature
+            value: Binary.fromHex(keyRegistration.signature)
           }
         } as any
       } as any,
@@ -344,9 +351,9 @@ export class VosMockService {
 
       console.log({ registerRes });
 
-      await sessionStorage.set(userId, { 
+      await sessionStorage.set(userId, {
         credentialId: `substrate_${userId}`,
-        address 
+        address
       });
 
       return {
